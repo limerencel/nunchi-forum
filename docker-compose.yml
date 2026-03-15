@@ -1,63 +1,130 @@
 version: '3.8'
 
+# ============================================
+# Nunchi Forum - Docker Compose 配置
+# ============================================
+# 使用方法:
+#   docker-compose up -d          # 启动所有服务
+#   docker-compose down           # 停止所有服务
+#   docker-compose logs -f        # 查看日志
+#   docker-compose ps             # 查看运行状态
+# ============================================
+
 services:
-  # 前端
+  # --------------------------------------------
+  # 前端服务 (React + Vite)
+  # --------------------------------------------
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NODE_VERSION=18
     container_name: nunchi-frontend
+    image: nunchi-forum/frontend:latest
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=http://localhost:3001
+      - NODE_ENV=development
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3001}
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     depends_on:
       - backend
     networks:
       - nunchi-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  # 后端
+  # --------------------------------------------
+  # 后端服务 (Node.js + Fastify)
+  # --------------------------------------------
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        - NODE_VERSION=18
     container_name: nunchi-backend
+    image: nunchi-forum/backend:latest
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/nunchi_forum
-      - JWT_SECRET=your-secret-key-change-in-production
-      - PORT=3001
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-3001}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/nunchi_forum}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
     volumes:
       - ./backend:/app
-      - /app/node_modules
+      - backend_node_modules:/app/node_modules
+      - backend_logs:/app/logs
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - nunchi-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
-  # 数据库
+  # --------------------------------------------
+  # PostgreSQL 数据库
+  # --------------------------------------------
   db:
     image: postgres:16-alpine
     container_name: nunchi-db
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=nunchi_forum
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-nunchi_forum}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
     networks:
       - nunchi-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-nunchi_forum}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
+# ============================================
+# 持久化卷
+# ============================================
 volumes:
   postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/docker/volumes/nunchi-postgres-data
+  frontend_node_modules:
+    driver: local
+  backend_node_modules:
+    driver: local
+  backend_logs:
+    driver: local
 
+# ============================================
+# 网络配置
+# ============================================
 networks:
   nunchi-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
