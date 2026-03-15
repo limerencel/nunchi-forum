@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # 前端
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nunchi-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - nunchi-network
+
+  # 后端
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nunchi-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/nunchi_forum
+      - JWT_SECRET=your-secret-key-change-in-production
+      - PORT=3001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - nunchi-network
+
+  # 数据库
+  db:
+    image: postgres:16-alpine
+    container_name: nunchi-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=nunchi_forum
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nunchi-network
+
+volumes:
+  postgres_data:
+
+networks:
+  nunchi-network:
+    driver: bridge
