@@ -22,9 +22,9 @@
 **请求体**
 ```json
 {
-  "username": "string",    // 必填，3-20字符，仅允许字母数字下划线
-  "email": "string",       // 必填，有效邮箱格式
-  "password": "string"     // 必填，8-32字符，需包含字母和数字
+  "username": "string",
+  "email": "string",
+  "password": "string"
 }
 ```
 
@@ -60,8 +60,8 @@
 **请求体**
 ```json
 {
-  "email": "string",       // 必填
-  "password": "string"     // 必填
+  "email": "string",
+  "password": "string"
 }
 ```
 
@@ -180,7 +180,7 @@ Authorization: Bearer {token}
 |------|------|------|
 | page | number | 页码，默认 1 |
 | limit | number | 每页数量，默认 20 |
-| sort | string | 排序方式: `newest`, `popular`, `name` |
+| sort | string | 排序方式: newest, popular, name |
 
 **响应**
 ```json
@@ -265,11 +265,11 @@ Authorization: Bearer {token}
 **请求体**
 ```json
 {
-  "name": "string",        // 必填，2-50字符
-  "slug": "string",        // 必填，唯一，URL友好格式
-  "description": "string", // 可选，最多500字符
-  "rules": "string",       // 可选
-  "is_public": true        // 可选，默认 true
+  "name": "string",
+  "slug": "string",
+  "description": "string",
+  "rules": "string",
+  "is_public": true
 }
 ```
 
@@ -353,7 +353,7 @@ Authorization: Bearer {token}
 |------|------|------|
 | page | number | 页码，默认 1 |
 | limit | number | 每页数量，默认 20 |
-| sort | string | 排序: `newest`, `popular`, `last_reply` |
+| sort | string | 排序: newest, popular, last_reply |
 | tag | string | 按标签筛选 |
 
 **响应**
@@ -437,8 +437,8 @@ Authorization: Bearer {token}
       "tags": ["tag1", "tag2"]
     },
     "replies": {
-      "data": [...],
-      "pagination": {...}
+      "data": [],
+      "pagination": {}
     }
   }
 }
@@ -460,9 +460,9 @@ Authorization: Bearer {token}
 **请求体**
 ```json
 {
-  "title": "string",       // 必填，5-100字符
-  "content": "string",     // 必填，支持 Markdown
-  "tags": ["string"]       // 可选，最多5个标签
+  "title": "string",
+  "content": "string",
+  "tags": ["string"]
 }
 ```
 
@@ -526,4 +526,356 @@ Authorization: Bearer {token}
 
 **请求头**
 ```
-Authorization:
+Authorization: Bearer {token}
+```
+
+**请求体**
+```json
+{
+  "is_pinned": true
+}
+```
+
+---
+
+### 7. 锁定/解锁主题
+
+**PATCH** `/threads/{id}/lock`
+
+锁定或解锁主题（需要版主权限）。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+**请求体**
+```json
+{
+  "is_locked": true
+}
+```
+
+---
+
+## 回复 API
+
+### 1. 获取回复列表
+
+**GET** `/threads/{thread_id}/replies`
+
+获取指定主题下的回复列表。
+
+**路径参数**
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| thread_id | string | 主题 ID |
+
+**查询参数**
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| page | number | 页码，默认 1 |
+| limit | number | 每页数量，默认 20 |
+| sort | string | 排序: oldest, newest |
+
+**响应**
+```json
+{
+  "success": true,
+  "data": {
+    "replies": [
+      {
+        "id": "uuid",
+        "content": "string",
+        "author": {
+          "id": "uuid",
+          "username": "string",
+          "avatar_url": "string",
+          "reputation": 100
+        },
+        "thread_id": "uuid",
+        "parent_id": "uuid",
+        "like_count": 10,
+        "is_edited": false,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 100
+    }
+  }
+}
+```
+
+---
+
+### 2. 创建回复
+
+**POST** `/threads/{thread_id}/replies`
+
+在指定主题下创建回复。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+**请求体**
+```json
+{
+  "content": "string",
+  "parent_id": "uuid"
+}
+```
+
+**响应**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "content": "string",
+    "author_id": "uuid",
+    "thread_id": "uuid",
+    "parent_id": "uuid",
+    "created_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+---
+
+### 3. 更新回复
+
+**PUT** `/replies/{id}`
+
+更新回复内容（仅作者可编辑，且创建时间30分钟内）。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+**请求体**
+```json
+{
+  "content": "string"
+}
+```
+
+---
+
+### 4. 删除回复
+
+**DELETE** `/replies/{id}`
+
+删除回复（仅作者或管理员可删除）。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+---
+
+### 5. 点赞/取消点赞回复
+
+**POST** `/replies/{id}/like`
+
+点赞或取消点赞回复。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+**请求体**
+```json
+{
+  "action": "like"
+}
+```
+
+---
+
+## 通知 API
+
+### 1. 获取通知列表
+
+**GET** `/notifications`
+
+获取当前用户的通知列表。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+**查询参数**
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| page | number | 页码，默认 1 |
+| limit | number | 每页数量，默认 20 |
+| unread_only | boolean | 仅显示未读，默认 false |
+
+**响应**
+```json
+{
+  "success": true,
+  "data": {
+    "notifications": [
+      {
+        "id": "uuid",
+        "type": "reply",
+        "title": "string",
+        "content": "string",
+        "is_read": false,
+        "sender": {
+          "id": "uuid",
+          "username": "string",
+          "avatar_url": "string"
+        },
+        "target": {
+          "type": "thread",
+          "id": "uuid",
+          "title": "string"
+        },
+        "created_at": "2024-01-01T00:00:00Z"
+      }
+    ],
+    "unread_count": 5,
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 50
+    }
+  }
+}
+```
+
+**通知类型**
+- `reply` - 回复通知
+- `mention` - @提及通知
+- `like` - 点赞通知
+- `follow` - 关注通知
+- `system` - 系统通知
+
+---
+
+### 2. 标记通知为已读
+
+**PATCH** `/notifications/{id}/read`
+
+将指定通知标记为已读。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+---
+
+### 3. 标记所有通知为已读
+
+**PATCH** `/notifications/read-all`
+
+将所有通知标记为已读。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+**响应**
+```json
+{
+  "success": true,
+  "message": "All notifications marked as read",
+  "marked_count": 10
+}
+```
+
+---
+
+### 4. 删除通知
+
+**DELETE** `/notifications/{id}`
+
+删除指定通知。
+
+**请求头**
+```
+Authorization: Bearer {token}
+```
+
+---
+
+## 通用错误响应
+
+### 错误响应格式
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "details": {}
+  }
+}
+```
+
+### HTTP 状态码
+
+| 状态码 | 描述 |
+|--------|------|
+| 200 | 请求成功 |
+| 201 | 创建成功 |
+| 400 | 请求参数错误 |
+| 401 | 未认证 |
+| 403 | 无权限 |
+| 404 | 资源不存在 |
+| 409 | 资源冲突 |
+| 422 | 验证失败 |
+| 429 | 请求过于频繁 |
+| 500 | 服务器内部错误 |
+
+### 错误码列表
+
+| 错误码 | 描述 |
+|--------|------|
+| INVALID_REQUEST | 请求格式错误 |
+| UNAUTHORIZED | 未提供认证信息 |
+| TOKEN_EXPIRED | 令牌已过期 |
+| FORBIDDEN | 权限不足 |
+| RESOURCE_NOT_FOUND | 资源不存在 |
+| VALIDATION_ERROR | 数据验证失败 |
+| RATE_LIMITED | 请求频率超限 |
+| INTERNAL_ERROR | 服务器内部错误 |
+
+---
+
+## 分页说明
+
+列表接口均支持分页，默认每页 20 条记录。
+
+**请求参数**
+- `page`: 页码，从 1 开始
+- `limit`: 每页数量，最大 100
+
+**响应格式**
+```json
+{
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}
+```
