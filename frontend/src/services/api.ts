@@ -211,29 +211,29 @@ export const boardApi = {
     if (params?.sort) queryParams.append('sort', params.sort)
 
     const query = queryParams.toString()
-    return apiRequest<BoardListResponse>(`/forums${query ? `?${query}` : ''}`)
+    return apiRequest<BoardListResponse>(`/boards${query ? `?${query}` : ''}`)
   },
 
   async getBoard(idOrSlug: string): Promise<BoardDetail> {
-    return apiRequest<BoardDetail>(`/forums/${idOrSlug}`)
+    return apiRequest<BoardDetail>(`/boards/${idOrSlug}`)
   },
 
   async createBoard(boardData: CreateBoardRequest): Promise<Board> {
-    return apiRequest<Board>('/forums', {
+    return apiRequest<Board>('/boards', {
       method: 'POST',
       body: JSON.stringify(boardData),
     })
   },
 
   async updateBoard(id: string, boardData: UpdateBoardRequest): Promise<Board> {
-    return apiRequest<Board>(`/forums/${id}`, {
+    return apiRequest<Board>(`/boards/${id}`, {
       method: 'PUT',
       body: JSON.stringify(boardData),
     })
   },
 
   async deleteBoard(id: string): Promise<void> {
-    return apiRequest<void>(`/forums/${id}`, { method: 'DELETE' })
+    return apiRequest<void>(`/boards/${id}`, { method: 'DELETE' })
   },
 }
 
@@ -247,7 +247,7 @@ export const threadApi = {
     if (params?.tag) queryParams.append('tag', params.tag)
 
     const query = queryParams.toString()
-    return apiRequest<ThreadListResponse>(`/forums/${forumId}/threads${query ? `?${query}` : ''}`)
+    return apiRequest<ThreadListResponse>(`/boards/${forumId}/threads${query ? `?${query}` : ''}`)
   },
 
   async getThread(id: string, page?: number, limit?: number): Promise<ThreadDetailResponse> {
@@ -260,7 +260,7 @@ export const threadApi = {
   },
 
   async createThread(forumId: string, threadData: CreateThreadRequest): Promise<Thread> {
-    return apiRequest<Thread>(`/forums/${forumId}/threads`, {
+    return apiRequest<Thread>(`/boards/${forumId}/threads`, {
       method: 'POST',
       body: JSON.stringify(threadData),
     })
