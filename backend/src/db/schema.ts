@@ -124,7 +124,7 @@ export const posts = pgTable(
     authorId: uuid('author_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    parentId: uuid('parent_id').references(() => posts.id, { onDelete: 'set null' }),
+    parentId: uuid('parent_id'),
     content: text('content').notNull(),
     likeCount: integer('like_count').notNull().default(0),
     isDeleted: boolean('is_deleted').notNull().default(false),

@@ -16,6 +16,9 @@ RUN npm ci
 # 复制源代码
 COPY . .
 
+# 构建 TypeScript
+RUN npm run build
+
 # 暴露端口
 EXPOSE 3001
 
@@ -23,5 +26,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1
 
-# 启动应用（使用 tsx 直接运行 TypeScript）
-CMD ["npx", "tsx", "src/app.ts"]
+# 启动应用（使用编译后的 JavaScript）
+CMD ["node", "--experimental-specifier-resolution=node", "dist/app.js"]

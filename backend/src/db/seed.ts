@@ -7,7 +7,7 @@ import {
   posts,
   userRoleEnum,
   userStatusEnum,
-} from './schema';
+} from './schema.js';
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
