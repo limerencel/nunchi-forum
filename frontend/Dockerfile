@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -11,11 +11,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build for production
-RUN npm run build
-
 # Expose port
 EXPOSE 3000
 
-# Start production server
-CMD ["npx", "serve", "-s", "dist", "-l", "3000"]
+# Start development server
+CMD ["npm", "run", "dev", "--", "--host", "--port", "3000"]
