@@ -24,13 +24,15 @@ export async function getBoards(
 
     return reply.send({
       success: true,
-      forums: boardsList,
-      pagination: {
-        items: boardsList,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
+      data: {
+        forums: boardsList,
+        pagination: {
+          items: boardsList,
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
       }
     });
   } catch (error: any) {
@@ -60,7 +62,7 @@ export async function getBoard(
 
     return reply.send({
       success: true,
-      forum: boardResult[0]
+      data: boardResult[0]
     });
   } catch (error: any) {
     return reply.status(500).send({
@@ -114,7 +116,7 @@ export async function createBoard(
 
     return reply.status(201).send({
       success: true,
-      forum: newBoard,
+      data: newBoard,
       message: '板块创建成功'
     });
   } catch (error: any) {
@@ -177,7 +179,7 @@ export async function updateBoard(
 
     return reply.send({
       success: true,
-      forum: updatedBoard,
+      data: updatedBoard,
       message: '板块更新成功'
     });
   } catch (error: any) {
