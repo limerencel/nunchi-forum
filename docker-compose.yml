@@ -83,8 +83,9 @@ services:
   db:
     image: postgres:16-alpine
     container_name: nunchi-db
-    ports:
-      - "5433:5432"
+    # 不暴露端口给宿主机，只允许容器内部访问
+    # ports:
+    #   - "5433:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
