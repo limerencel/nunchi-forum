@@ -24,7 +24,8 @@ export async function getBoards(
 
     return reply.send({
       success: true,
-      data: {
+      forums: boardsList,
+      pagination: {
         items: boardsList,
         total,
         page,
@@ -59,7 +60,7 @@ export async function getBoard(
 
     return reply.send({
       success: true,
-      data: boardResult[0]
+      forum: boardResult[0]
     });
   } catch (error: any) {
     return reply.status(500).send({
@@ -113,7 +114,7 @@ export async function createBoard(
 
     return reply.status(201).send({
       success: true,
-      data: newBoard,
+      forum: newBoard,
       message: '板块创建成功'
     });
   } catch (error: any) {
@@ -176,7 +177,7 @@ export async function updateBoard(
 
     return reply.send({
       success: true,
-      data: updatedBoard,
+      forum: updatedBoard,
       message: '板块更新成功'
     });
   } catch (error: any) {
